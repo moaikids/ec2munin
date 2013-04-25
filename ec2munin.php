@@ -18,9 +18,16 @@ foreach ($regions as $region) {
 	// create config
 	foreach ($instances->body->reservationSet->children() as $reservationItem) {
 		foreach ($reservationItem->instancesSet->children() as $instanceItem) {
+                        //foreach ($instanceItem as $key=>$val){
+                        //        print $key . " : " . $val . "\n";
+                        //}
+                        $pub_ip = $instanceItem->ipAddress;
+                        $private_ip = $instanceItem->privateIpAddress;
+                        $ip = $pub_ip ? $pub_ip : $private_ip;
+                        $dns_name = $use_public_dns ? $instanceItem->dnsName : $instanceItem->privateDnsName;
 			$group_name = $region;
-			$node_name = $instanceItem->dnsName;
-			$node_ip = $use_public_dns ? $instanceItem->dnsName : $instanceItem->privateIpAddress;
+			$node_name = $dns_name ? $dns_name : $ip;
+			$node_ip = $ip;
 			$config .= create_munin_config($node_ip, $node_name, $group_name);
 			continue;
 		}
