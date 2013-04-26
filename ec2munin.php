@@ -12,22 +12,32 @@ foreach ($regions as $region) {
 	// describe instances in the region.
 	$ec2->set_region($region);
 	$instances = $ec2->describe_instances();
+        $tags = $ec2->describe_tags();
 	if (!$instances->isOK())
 		continue;
+
+        $tagSet = array();
+        foreach ($tags->body->tagSet->children() as $tag){
+                $resourceId = trim($tag->resourceId[0]);
+                $val = trim($tag->value[0]);
+                $tagSet[$resourceId] = $val;
+        }
 
 	// create config
 	foreach ($instances->body->reservationSet->children() as $reservationItem) {
 		foreach ($reservationItem->instancesSet->children() as $instanceItem) {
-                        //foreach ($instanceItem as $key=>$val){
-                        //        print $key . " : " . $val . "\n";
-                        //}
                         $pub_ip = $instanceItem->ipAddress;
                         $private_ip = $instanceItem->privateIpAddress;
                         $ip = $pub_ip ? $pub_ip : $private_ip;
                         $dns_name = $use_public_dns ? $instanceItem->dnsName : $instanceItem->privateDnsName;
 			$group_name = $region;
-			$node_name = $dns_name ? $dns_name : $ip;
+                        $instance_id = trim($instanceItem->instanceId[0]);
+                        $node_name = $tagSet[$instance_id];
+                        if (!$node_name) {
+			        $node_name = $dns_name ? $dns_name : $ip;
+                        }
 			$node_ip = $ip;
+                        print "instance info : " . $node_ip . " / " . $node_name . " / " . $group_name . "\n";
 			$config .= create_munin_config($node_ip, $node_name, $group_name);
 			continue;
 		}
