@@ -18,9 +18,11 @@ foreach ($regions as $region) {
 
         $tagSet = array();
         foreach ($tags->body->tagSet->children() as $tag){
-                $resourceId = trim($tag->resourceId[0]);
-                $val = trim($tag->value[0]);
-                $tagSet[$resourceId] = $val;
+                if ($tag->key[0] == 'Name'){
+                        $resourceId = trim($tag->resourceId[0]);
+                        $val = trim($tag->value[0]);
+                        $tagSet[$resourceId] = $val;
+                }
         }
 
 	// create config
