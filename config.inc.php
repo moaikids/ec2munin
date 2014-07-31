@@ -27,3 +27,8 @@ $config_begin_seperater = '### EC2MUNIN BEGIN ###';
 $config_end_seperater = '### EC2MUNIN END ###';
 
 $use_public_dns = false;
+
+$include_groups = array();
+$exclude_groups = array();
+
+

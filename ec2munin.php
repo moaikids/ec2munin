@@ -16,12 +16,17 @@ foreach ($regions as $region) {
 	if (!$instances->isOK())
 		continue;
 
-        $tagSet = array();
+        $nameSet = array();
+        $groupSet = array();
         foreach ($tags->body->tagSet->children() as $tag){
                 if ($tag->key[0] == 'Name'){
                         $resourceId = trim($tag->resourceId[0]);
                         $val = trim($tag->value[0]);
-                        $tagSet[$resourceId] = $val;
+                        $nameSet[$resourceId] = $val;
+                } elseif ($tag->key[0] == 'Group'){
+                        $resourceId = trim($tag->resourceId[0]);
+                        $val = trim($tag->value[0]);
+                        $groupSet[$resourceId] = $val;
                 }
         }
 
@@ -32,9 +37,20 @@ foreach ($regions as $region) {
                         $private_ip = $instanceItem->privateIpAddress;
                         $ip = $pub_ip ? $pub_ip : $private_ip;
                         $dns_name = $use_public_dns ? $instanceItem->dnsName : $instanceItem->privateDnsName;
-			$group_name = $region;
+                        $group_name = $region;
                         $instance_id = trim($instanceItem->instanceId[0]);
-                        $node_name = $tagSet[$instance_id];
+                        $node_name = $nameSet[$instance_id];
+                        $group_name = $groupSet[$instance_id];
+                        if (!$group_name) {
+                            $group_name = $region;
+                        }
+                        if (count($include_groups) && !in_array($group_name, $include_groups)) {
+                            continue;
+                        }
+                        if (count($exclude_groups) && in_array($group_name, $exclude_groups)) {
+                            continue;
+                        }
+
                         if (!$node_name) {
 			        $node_name = $dns_name ? $dns_name : $ip;
                         }
